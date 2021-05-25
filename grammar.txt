@@ -1,0 +1,22 @@
+SourceFile = { FunctionDef } .
+
+FunctionDef = "fn" identifier FunctionSignature FunctionBody .
+FunctionSignature = "(" [ ParameterList ] ")" [ Result ] .
+ParameterList = Parameter { "," Parameter }
+Parameter = [ identifier ] ":" Type
+Result = ":" Type
+
+FunctionBody = Block .
+Block = "{" StatementList "}" .
+StatementList = { Statement ";" } .
+Statement = PrimDecl .
+PrimDecl = "prim" identifier ":" Type "=" primitive .
+
+Type = identifier .
+
+primitive = integer .
+integer = decimal_digit { decimal_digit } .
+identifier = letter { letter } .
+letter = "a" ... "z" | "A" ... "Z" | decimal_digit
+
+decimal_digit = "0" ... "9"
