@@ -6,7 +6,7 @@ pub struct Lexer {
     read_position: usize,
     char: char,
     characters: Vec<char>,
-    line: usize
+    line: usize,
 }
 
 impl Lexer {
@@ -17,10 +17,10 @@ impl Lexer {
             read_position: 0,
             char: '\0',
             characters: char_vec,
-            line: 1
+            line: 1,
         };
         lexer.read_char();
-        return lexer
+        return lexer;
     }
 
     fn read_char(&mut self) {
@@ -37,20 +37,23 @@ impl Lexer {
         }
     }
 
-    pub fn next_token(&mut self) -> Token {
+    pub fn next_token(&mut self) -> Option<Token> {
         // TODO: Skip whitespace and comments
         self.skip_whitespace();
-        match self.char {
-            '(' => Token::LeftParenthesis,
-            ')' => Token::RightParenthesis,
-            '{' => Token::LeftBrace,
-            '}' => Token::RightBrace,
-            ':' => Token::Colon,
-            ';' => Token::SemiColon,
+        let res = match self.char {
+            '(' => Some(Token::LeftParenthesis),
+            ')' => Some(Token::RightParenthesis),
+            '{' => Some(Token::LeftBrace),
+            '}' => Some(Token::RightBrace),
+            ':' => Some(Token::Colon),
+            ';' => Some(Token::SemiColon),
+            '\0' => None,
             _ => {
-                lookup_literal(self.read_literal())
+                return Some(lookup_literal(self.read_literal()));
             }
-        }
+        };
+        self.read_char();
+        return res;
     }
 
     fn skip_whitespace(&mut self) {
