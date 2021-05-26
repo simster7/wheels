@@ -9,7 +9,9 @@ use crate::parser::parser::Parser;
 fn main() {
     let lexer = Lexer::new(String::from(r#"
 fn simon(a: int, b: int): int {
-    var x: int = 5;
+    var sum: int = a + b;
+    var two_sum: int = sum + 2.7;
+    return two_sum;
 }
     "#));
 

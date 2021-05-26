@@ -16,6 +16,7 @@ pub enum Token {
     Return,
     Comma,
     Equals,
+    Plus,
     EOF,
 }
 

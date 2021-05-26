@@ -58,6 +58,11 @@ pub enum NodeType {
     Parameter,
     Type,
     VarDecl,
+    VarReference,
     Block,
     Integer,
+    Float,
+    BinaryOperation,
+    Expression,
+    Jump,
 }

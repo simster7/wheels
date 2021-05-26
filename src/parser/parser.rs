@@ -128,14 +128,11 @@ impl Parser {
 
     // Statement = VarDecl .
     fn statement(&mut self) -> Result<Node, ParseError> {
-        self.expect_one_of(&[Token::Var])?;
+        // self.expect_one_of(&[Token::Var])?;
         match self.current_token {
-            Token::Var => {
-                self.var_decl()
-            }
-            _ => {
-                Err(ParseError::UnexpectedToken { pos: self.lexer.get_position(), expected: "var".to_owned(), found: self.current_token.to_string() })
-            }
+            Token::Var => self.var_decl(),
+            Token::Return => self.fn_return(),
+            _ => self.expression(),
         }
     }
 
@@ -170,6 +167,41 @@ impl Parser {
         Ok(node)
     }
 
+    // Expression = UnaryExpression .
+    fn expression(&mut self) -> Result<Node, ParseError> {
+        let mut expression_node = Node::new(NodeType::Expression);
+        expression_node.add_child(self.addition()?);
+
+        Ok(expression_node)
+    }
+
+    fn addition(&mut self) -> Result<Node, ParseError> {
+        let mut node = self.operand()?;
+
+        if self.current_token == Token::Plus {
+            let mut binary_node = Node::new(NodeType::BinaryOperation);
+            binary_node.add_token(self.current_token.clone());
+
+            binary_node.add_child(node);
+            self.next_token();
+            binary_node.add_child(self.operand()?);
+            Ok(binary_node)
+        } else {
+            Ok(node)
+        }
+    }
+
+    fn operand(&mut self) -> Result<Node, ParseError> {
+        self.expect_one_of(&[Token::Integer("".into()), Token::Identifier("".into()), Token::Float("".into())])?;
+
+        match self.current_token {
+            Token::Integer(_) => self.integer(),
+            Token::Float(_) => self.float(),
+            Token::Identifier(_) => self.identifier(NodeType::VarReference),
+            _ => unreachable!("should have been caught by expect one of")
+        }
+    }
+
     fn integer(&mut self) -> Result<Node, ParseError> {
         self.expect(Token::Integer("".into()))?;
         let mut node = Node::new(NodeType::Integer);
@@ -179,10 +211,23 @@ impl Parser {
         Ok(node)
     }
 
-    // Expression = UnaryExpression .
-    fn expression(&mut self) -> Result<Node, ParseError> {
-        // TODO: Obviously this is an incomplete implementation
-        self.expect(Token::Integer("".into()))?;
-        self.integer()
+    fn float(&mut self) -> Result<Node, ParseError> {
+        self.expect(Token::Float("".into()))?;
+        let mut node = Node::new(NodeType::Float);
+        node.add_token(self.current_token.clone());
+        self.next_token();
+
+        Ok(node)
+    }
+
+    fn fn_return(&mut self) -> Result<Node, ParseError> {
+        self.expect(Token::Return)?;
+        let mut jump_node = Node::new(NodeType::Jump);
+        jump_node.add_token(self.current_token.clone());
+        self.next_token();
+
+        jump_node.add_child(self.expression()?);
+
+        Ok(jump_node)
     }
 }

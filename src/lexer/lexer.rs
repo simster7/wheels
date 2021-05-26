@@ -7,6 +7,7 @@ pub struct Lexer {
     char: char,
     characters: Vec<char>,
     line: usize,
+    column_start: usize,
     column: usize,
 }
 
@@ -19,14 +20,15 @@ impl Lexer {
             char: '\0',
             characters: char_vec,
             line: 1,
+            column_start: 0,
             column: 0,
         };
         lexer.read_char();
         return lexer;
     }
 
-    pub fn get_position(&self) -> (usize, usize) {
-        return (self.line, self.column)
+    pub fn get_position(&self) -> (usize, usize, usize) {
+        return (self.line, self.column_start, self.column)
     }
 
     fn read_char(&mut self) {
@@ -46,8 +48,10 @@ impl Lexer {
     }
 
     pub fn next_token(&mut self) -> Token {
-        // TODO: Skip whitespace and comments
+        // TODO: Skip comments
         self.skip_whitespace();
+
+        self.column_start = self.column;
         let res = match self.char {
             '(' => Token::LeftParenthesis,
             ')' => Token::RightParenthesis,
@@ -57,6 +61,7 @@ impl Lexer {
             ';' => Token::SemiColon,
             ',' => Token::Comma,
             '=' => Token::Equals,
+            '+' => Token::Plus,
             '\0' => Token::EOF,
             _ => {
                 if is_digit(self.char) {
@@ -105,7 +110,7 @@ fn is_whitespace(c: char) -> bool {
 }
 
 fn is_literal(c: char) -> bool {
-    is_letter(c) || is_digit(c)
+    is_letter(c) || is_digit(c) || c == '_'
 }
 
 fn is_letter(c: char) -> bool {
