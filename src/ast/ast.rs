@@ -23,25 +23,35 @@ impl Node {
 
 impl Display for Node {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        if self.token.is_some() {
-            write!(f, "{:?} ({:?})", self.node_type, self.token.as_ref().unwrap())?;
-        } else {
-            write!(f, "{:?}", self.node_type)?;
-        }
-        if self.children.len() > 0 {
-            write!(f, " [\n")?;
-            for child in self.children.iter() {
-                write!(f, "\t{}\n", child)?;
-            }
-            write!(f, "]")?;
-        }
-        Ok(())
+        write!(f, "{}", format_print(self, 0))
     }
+}
+
+fn format_print(node: &Node, level: usize) -> String {
+    let tabs = "\t".repeat(level);
+
+    let mut out = String::from("");
+    if node.token.is_some() {
+        out += format!("{}{:?} ({:?})", tabs, node.node_type, node.token.as_ref().unwrap()).as_str();
+    } else {
+        out += format!("{}{:?}", tabs, node.node_type).as_str();
+    }
+
+    if node.children.len() > 0 {
+        out += " [\n";
+        for child in node.children.iter() {
+            out += format_print(child, level+1).as_str();
+        }
+        out += format!("{}]", tabs).as_str();
+    }
+    out += "\n";
+    out
 }
 
 #[derive(Debug)]
 pub enum NodeType {
     Function,
     Identifier,
+    FunctionSignature,
     ParameterList,
 }

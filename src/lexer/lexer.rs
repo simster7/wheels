@@ -37,19 +37,20 @@ impl Lexer {
         }
     }
 
-    pub fn next_token(&mut self) -> Option<Token> {
+    pub fn next_token(&mut self) -> Token {
         // TODO: Skip whitespace and comments
         self.skip_whitespace();
         let res = match self.char {
-            '(' => Some(Token::LeftParenthesis),
-            ')' => Some(Token::RightParenthesis),
-            '{' => Some(Token::LeftBrace),
-            '}' => Some(Token::RightBrace),
-            ':' => Some(Token::Colon),
-            ';' => Some(Token::SemiColon),
-            '\0' => None,
+            '(' => Token::LeftParenthesis,
+            ')' => Token::RightParenthesis,
+            '{' => Token::LeftBrace,
+            '}' => Token::RightBrace,
+            ':' => Token::Colon,
+            ';' => Token::SemiColon,
+            ',' => Token::Comma,
+            '\0' => Token::EOF,
             _ => {
-                return Some(lookup_literal(self.read_literal()));
+                return lookup_literal(self.read_literal());
             }
         };
         self.read_char();

@@ -13,6 +13,7 @@ pub enum Token {
     Function,
     Var,
     Return,
+    Comma,
     EOF
 }
 

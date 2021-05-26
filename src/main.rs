@@ -8,7 +8,7 @@ use crate::parser::parser::Parser;
 
 fn main() {
     let lexer = Lexer::new(String::from(r#"
-fn simon(a: int): int {
+fn simon(a: int, b: int): int {
     return a;
 }
     "#));
