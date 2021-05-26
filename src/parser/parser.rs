@@ -29,6 +29,19 @@ impl Parser {
         return Err(ParseError::UnexpectedToken{expected: token_type.to_string(), found})
     }
 
+    fn expect_one_of(&mut self, tokens: &[Token]) -> Result<(), ParseError> {
+        let mut one_of = String::from("one of: ");
+        for token in tokens.iter() {
+            if self.current_token == *token {
+                return Ok(())
+            }
+            one_of += token.to_string().as_str();
+            one_of += ",";
+        }
+        let found = self.current_token.to_string();
+        return Err(ParseError::UnexpectedToken {expected: one_of, found})
+    }
+
     fn next_token(&mut self) {
         self.current_token = self.lexer.next_token()
     }
@@ -39,15 +52,12 @@ impl Parser {
         let mut function_node = Node::new(NodeType::Function);
         self.next_token();
 
-        self.expect(Token::Identifier(String::from("")))?;
-        let mut node = Node::new(NodeType::Identifier);
-        node.add_token(self.current_token.clone());
-        function_node.add_child(node);
-        // TODO: Add ident to symbol table
-        self.next_token();
+        function_node.add_child(self.identifier(NodeType::Identifier)?);
 
         let function_signature = self.function_signature()?;
         function_node.add_child(function_signature);
+
+
 
         println!("{}", function_node);
 
@@ -59,18 +69,21 @@ impl Parser {
         self.expect(Token::LeftParenthesis)?;
         let mut function_signature_node = Node::new(NodeType::FunctionSignature);
         let mut parameter_list_node = Node::new(NodeType::ParameterList);
-        function_signature_node.add_child(parameter_list_node);
         self.next_token();
 
+        // ParameterList = Parameter { "," Parameter }
         while self.current_token != Token::RightParenthesis {
-            let parameter_node = self.parameter()?;
-            parameter_list_node.add_child(parameter_node);
-
-            if self.current_token == Token::Comma {
-                self.expect(Token::Comma)?;
-                self.next_token();
+            self.expect_one_of(&[Token::Identifier(String::new()), Token::Comma]);
+            match self.current_token {
+                Token::Comma => self.next_token(),
+                _ => {
+                    let parameter_node = self.parameter()?;
+                    parameter_list_node.add_child(parameter_node);
+                }
             }
         }
+
+        function_signature_node.add_child(parameter_list_node);
 
         self.expect(Token::RightParenthesis)?;
         self.next_token();
@@ -79,10 +92,7 @@ impl Parser {
             self.expect(Token::Colon)?;
             self.next_token();
 
-            self.expect(Token::Identifier(String::from("")))?;
-            let mut return_node = Node::new(NodeType::Identifier);
-            return_node.add_token(self.current_token.clone());
-            function_signature_node.add_child(return_node);
+            function_signature_node.add_child(self.identifier(NodeType::Type)?);
             self.next_token();
         }
 
@@ -91,20 +101,75 @@ impl Parser {
 
     // Parameter = [ identifier ] ":" Type
     fn parameter(&mut self) -> Result<Node, ParseError> {
-        self.expect(Token::Identifier(String::from("")))?;
-        let mut node = Node::new(NodeType::Identifier);
-        node.add_token(self.current_token.clone());
-        self.next_token();
+        let mut node = self.identifier(NodeType::Parameter)?;
 
         self.expect(Token::Colon)?;
         self.next_token();
 
-        self.expect(Token::Identifier(String::from("")))?;
-        let mut parameter_type = Node::new(NodeType::Identifier);
-        parameter_type.add_token(self.current_token.clone());
+        let mut parameter_type = self.identifier(NodeType::Type)?;
         node.add_child(parameter_type);
-        self.next_token();
 
         Ok(node)
+    }
+
+    // Block = "{" StatementList "}" .
+    fn block(&mut self) -> Result<Node, ParseError> {
+        self.expect(Token::LeftBrace);
+        self.next_token();
+
+        // StatementList = { Statement ";" } .
+        while self.current_token != Token::RightBrace {
+            self.statement()?;
+        }
+
+        unimplemented!();
+    }
+
+    // Statement = VarDecl .
+    fn statement(&mut self) -> Result<Node, ParseError> {
+        self.expect_one_of(&[Token::Var]);
+        match self.current_token {
+            Token::Var => {
+
+            }
+            _ => {}
+        }
+
+        unimplemented!();
+    }
+    
+    // VarDecl = "var" identifier ":" Type "=" primitive .
+    fn var_decl(&mut self) -> Result<Node, ParseError> {
+        self.expect(Token::Var)?;
+        let mut var_decl_node = Node::new(NodeType::VarDecl);
+        self.next_token();
+
+        var_decl_node.add_child(self.identifier(NodeType::Identifier)?);
+
+        self.expect(Token::Colon)?;
+        self.next_token();
+
+        var_decl_node.add_child(self.identifier(NodeType::Type)?);
+
+        self.expect(Token::Equals)?;
+        self.next_token();
+
+        unimplemented!();
+
+        Ok(var_decl_node)
+    }
+
+    fn identifier(&mut self, node_type: NodeType) -> Result<Node, ParseError> {
+        self.expect(Token::Identifier(String::new()))?;
+        let mut node = Node::new(node_type);
+        node.add_token(self.current_token.clone());
+        // TODO: Add ident to symbol table
+        self.next_token();
+        Ok(node)
+    }
+
+    // Expression = UnaryExpression .
+    fn expression(&mut self) -> Result<Node, ParseError> {
+        unimplemented!();
     }
 }

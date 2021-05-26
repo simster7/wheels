@@ -14,7 +14,8 @@ pub enum Token {
     Var,
     Return,
     Comma,
-    EOF
+    Equals,
+    EOF,
 }
 
 impl PartialEq for Token {

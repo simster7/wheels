@@ -54,4 +54,8 @@ pub enum NodeType {
     Identifier,
     FunctionSignature,
     ParameterList,
+    Return,
+    Parameter,
+    Type,
+    VarDecl,
 }

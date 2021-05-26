@@ -9,8 +9,13 @@ Result = ":" Type
 FunctionBody = Block .
 Block = "{" StatementList "}" .
 StatementList = { Statement ";" } .
-Statement = PrimDecl .
-PrimDecl = "prim" identifier ":" Type "=" primitive .
+Statement = VarDecl .
+VarDecl = "var" identifier ":" Type "=" Expression .
+Expression = UnaryExpression .
+UnaryExpression = PrimaryExpression .
+PrimaryExpression = Operand .
+Operand = Literal | identifier .
+Literal = primitive .
 
 Type = "int" .
 
