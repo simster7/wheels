@@ -11,7 +11,11 @@ pub struct Node {
 
 impl Node {
     pub fn new(node_type: NodeType) -> Node {
-        Node {node_type, children: Vec::new(), token: None}
+        Node {
+            node_type,
+            children: Vec::new(),
+            token: None,
+        }
     }
     pub fn add_child(&mut self, child: Node) {
         self.children.push(child)
@@ -32,7 +36,13 @@ fn format_print(node: &Node, level: usize) -> String {
 
     let mut out = String::from("");
     if node.token.is_some() {
-        out += format!("{}{:?} ({:?})", tabs, node.node_type, node.token.as_ref().unwrap()).as_str();
+        out += format!(
+            "{}{:?} ({:?})",
+            tabs,
+            node.node_type,
+            node.token.as_ref().unwrap()
+        )
+        .as_str();
     } else {
         out += format!("{}{:?}", tabs, node.node_type).as_str();
     }
@@ -40,7 +50,7 @@ fn format_print(node: &Node, level: usize) -> String {
     if node.children.len() > 0 {
         out += " [\n";
         for child in node.children.iter() {
-            out += format_print(child, level+1).as_str();
+            out += format_print(child, level + 1).as_str();
         }
         out += format!("{}]", tabs).as_str();
     }

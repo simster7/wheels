@@ -37,6 +37,6 @@ pub fn lookup_literal(literal: String) -> Token {
         "var" => Token::Var,
         "fn" => Token::Function,
         "return" => Token::Return,
-        _ => Token::Identifier(literal)
+        _ => Token::Identifier(literal),
     }
 }

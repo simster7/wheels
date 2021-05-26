@@ -1,7 +1,7 @@
-use crate::lexer::lexer::Lexer;
-use crate::token::token::Token;
 use crate::ast::ast::{Node, NodeType};
+use crate::lexer::lexer::Lexer;
 use crate::parser::errors::ParseError;
+use crate::token::token::Token;
 use std::borrow::Borrow;
 
 pub struct Parser {
@@ -12,7 +12,10 @@ pub struct Parser {
 
 impl Parser {
     pub fn new(lexer: Lexer) -> Parser {
-        let mut parser = Parser { lexer, current_token: Token::EOF };
+        let mut parser = Parser {
+            lexer,
+            current_token: Token::EOF,
+        };
         parser.next_token();
         parser
     }
@@ -26,7 +29,11 @@ impl Parser {
             return Ok(());
         }
         let found = self.current_token.to_string();
-        return Err(ParseError::UnexpectedToken {pos: self.lexer.get_position(), expected: token_type.to_string(), found });
+        return Err(ParseError::UnexpectedToken {
+            pos: self.lexer.get_position(),
+            expected: token_type.to_string(),
+            found,
+        });
     }
 
     fn expect_one_of(&mut self, tokens: &[Token]) -> Result<(), ParseError> {
@@ -39,7 +46,11 @@ impl Parser {
             one_of += ",";
         }
         let found = self.current_token.to_string();
-        return Err(ParseError::UnexpectedToken { pos: self.lexer.get_position(), expected: one_of, found });
+        return Err(ParseError::UnexpectedToken {
+            pos: self.lexer.get_position(),
+            expected: one_of,
+            found,
+        });
     }
 
     fn next_token(&mut self) {
@@ -192,13 +203,17 @@ impl Parser {
     }
 
     fn operand(&mut self) -> Result<Node, ParseError> {
-        self.expect_one_of(&[Token::Integer("".into()), Token::Identifier("".into()), Token::Float("".into())])?;
+        self.expect_one_of(&[
+            Token::Integer("".into()),
+            Token::Identifier("".into()),
+            Token::Float("".into()),
+        ])?;
 
         match self.current_token {
             Token::Integer(_) => self.integer(),
             Token::Float(_) => self.float(),
             Token::Identifier(_) => self.identifier(NodeType::VarReference),
-            _ => unreachable!("should have been caught by expect one of")
+            _ => unreachable!("should have been caught by expect one of"),
         }
     }
 

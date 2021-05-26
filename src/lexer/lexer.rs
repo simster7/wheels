@@ -1,4 +1,4 @@
-use crate::token::token::{Token, lookup_literal};
+use crate::token::token::{lookup_literal, Token};
 
 #[derive(Debug)]
 pub struct Lexer {
@@ -28,7 +28,7 @@ impl Lexer {
     }
 
     pub fn get_position(&self) -> (usize, usize, usize) {
-        return (self.line, self.column_start, self.column)
+        return (self.line, self.column_start, self.column);
     }
 
     fn read_char(&mut self) {
@@ -73,7 +73,7 @@ impl Lexer {
                         Token::Float(integer + "." + decimal.as_str())
                     } else {
                         Token::Integer(integer)
-                    }
+                    };
                 }
                 return lookup_literal(self.read_literal());
             }
