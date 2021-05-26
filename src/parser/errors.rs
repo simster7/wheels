@@ -1,8 +1,8 @@
-// use thiserror::Error;
+use thiserror::Error;
 use crate::token::token::Token;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Error)]
 pub enum ParserError {
-    // #[error("Unexpected token")]
-    UnexpectedToken,
+    #[error("unexpected token: expected {expected:?} found {found:?}")]
+    UnexpectedToken{expected: String, found: String},
 }

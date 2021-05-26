@@ -1,13 +1,15 @@
-#[derive(Debug)]
+use std::fmt::{Display, Formatter, Result};
+
+#[derive(Debug, Clone)]
 pub enum Token {
     Identifier(String),
+    Integer(isize),
     LeftBrace,
     RightBrace,
     LeftParenthesis,
     RightParenthesis,
     Colon,
     SemiColon,
-    Integer(isize),
     Function,
     Var,
     Return,
@@ -17,6 +19,12 @@ pub enum Token {
 impl PartialEq for Token {
     fn eq(&self, other: &Self) -> bool {
         std::mem::discriminant(self) == std::mem::discriminant(other)
+    }
+}
+
+impl Display for Token {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(f, "{:?}", self)
     }
 }
 

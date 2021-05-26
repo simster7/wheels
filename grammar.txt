@@ -12,7 +12,7 @@ StatementList = { Statement ";" } .
 Statement = PrimDecl .
 PrimDecl = "prim" identifier ":" Type "=" primitive .
 
-Type = identifier .
+Type = "int" .
 
 primitive = integer .
 integer = decimal_digit { decimal_digit } .
