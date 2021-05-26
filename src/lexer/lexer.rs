@@ -7,6 +7,7 @@ pub struct Lexer {
     char: char,
     characters: Vec<char>,
     line: usize,
+    column: usize,
 }
 
 impl Lexer {
@@ -18,9 +19,14 @@ impl Lexer {
             char: '\0',
             characters: char_vec,
             line: 1,
+            column: 0,
         };
         lexer.read_char();
         return lexer;
+    }
+
+    pub fn get_position(&self) -> (usize, usize) {
+        return (self.line, self.column)
     }
 
     fn read_char(&mut self) {
@@ -31,9 +37,11 @@ impl Lexer {
         }
         self.position = self.read_position;
         self.read_position += 1;
+        self.column += 1;
 
         if self.char == '\n' {
-            self.line += 1
+            self.line += 1;
+            self.column = 0;
         }
     }
 
@@ -48,8 +56,20 @@ impl Lexer {
             ':' => Token::Colon,
             ';' => Token::SemiColon,
             ',' => Token::Comma,
+            '=' => Token::Equals,
             '\0' => Token::EOF,
             _ => {
+                if is_digit(self.char) {
+                    let integer = self.read_number();
+                    return if self.char == '.' {
+                        self.read_char();
+                        let decimal = self.read_number();
+                        // TODO: Check float ending here. Currently `2.34a` would be a valid float (2.34)
+                        Token::Float(integer + "." + decimal.as_str())
+                    } else {
+                        Token::Integer(integer)
+                    }
+                }
                 return lookup_literal(self.read_literal());
             }
         };
@@ -64,8 +84,16 @@ impl Lexer {
     }
 
     fn read_literal(&mut self) -> String {
+        self.read_fn(&is_literal)
+    }
+
+    fn read_number(&mut self) -> String {
+        self.read_fn(&is_digit)
+    }
+
+    fn read_fn(&mut self, test: &dyn Fn(char) -> bool) -> String {
         let start: usize = self.position;
-        while is_literal(self.char) {
+        while test(self.char) {
             self.read_char()
         }
         self.characters[start..self.position].iter().collect()

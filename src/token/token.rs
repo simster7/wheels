@@ -3,7 +3,8 @@ use std::fmt::{Display, Formatter, Result};
 #[derive(Debug, Clone)]
 pub enum Token {
     Identifier(String),
-    Integer(isize),
+    Integer(String),
+    Float(String),
     LeftBrace,
     RightBrace,
     LeftParenthesis,

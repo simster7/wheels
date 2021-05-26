@@ -3,6 +3,6 @@ use crate::token::token::Token;
 
 #[derive(Debug, Error)]
 pub enum ParseError {
-    #[error("unexpected token: expected {expected:?} found {found:?}")]
-    UnexpectedToken{expected: String, found: String},
+    #[error("{pos:?}: unexpected token: expected {expected} found {found}")]
+    UnexpectedToken{pos: (usize, usize), expected: String, found: String},
 }

@@ -12,7 +12,7 @@ pub struct Parser {
 
 impl Parser {
     pub fn new(lexer: Lexer) -> Parser {
-        let mut parser = Parser {lexer, current_token: Token::EOF};
+        let mut parser = Parser { lexer, current_token: Token::EOF };
         parser.next_token();
         parser
     }
@@ -23,23 +23,23 @@ impl Parser {
 
     fn expect(&mut self, token_type: Token) -> Result<(), ParseError> {
         if self.current_token == token_type {
-            return Ok(())
+            return Ok(());
         }
         let found = self.current_token.to_string();
-        return Err(ParseError::UnexpectedToken{expected: token_type.to_string(), found})
+        return Err(ParseError::UnexpectedToken {pos: self.lexer.get_position(), expected: token_type.to_string(), found });
     }
 
     fn expect_one_of(&mut self, tokens: &[Token]) -> Result<(), ParseError> {
         let mut one_of = String::from("one of: ");
         for token in tokens.iter() {
             if self.current_token == *token {
-                return Ok(())
+                return Ok(());
             }
             one_of += token.to_string().as_str();
             one_of += ",";
         }
         let found = self.current_token.to_string();
-        return Err(ParseError::UnexpectedToken {expected: one_of, found})
+        return Err(ParseError::UnexpectedToken { pos: self.lexer.get_position(), expected: one_of, found });
     }
 
     fn next_token(&mut self) {
@@ -53,8 +53,8 @@ impl Parser {
 
         let mut function_node = self.identifier(NodeType::Function)?;
 
-        let function_signature = self.function_signature()?;
-        function_node.add_child(function_signature);
+        function_node.add_child(self.function_signature()?);
+        function_node.add_child(self.block()?);
 
         println!("{}", function_node);
 
@@ -70,7 +70,7 @@ impl Parser {
 
         // ParameterList = Parameter { "," Parameter }
         while self.current_token != Token::RightParenthesis {
-            self.expect_one_of(&[Token::Identifier(String::new()), Token::Comma]);
+            self.expect_one_of(&[Token::Identifier("".into()), Token::Comma])?;
             match self.current_token {
                 Token::Comma => self.next_token(),
                 _ => {
@@ -90,7 +90,6 @@ impl Parser {
             self.next_token();
 
             function_signature_node.add_child(self.identifier(NodeType::Type)?);
-            self.next_token();
         }
 
         Ok(function_signature_node)
@@ -111,31 +110,36 @@ impl Parser {
 
     // Block = "{" StatementList "}" .
     fn block(&mut self) -> Result<Node, ParseError> {
-        self.expect(Token::LeftBrace);
+        self.expect(Token::LeftBrace)?;
         self.next_token();
+
+        let mut block_node = Node::new(NodeType::Block);
 
         // StatementList = { Statement ";" } .
         while self.current_token != Token::RightBrace {
-            self.statement()?;
+            block_node.add_child(self.statement()?);
+
+            self.expect(Token::SemiColon)?;
+            self.next_token();
         }
 
-        unimplemented!();
+        Ok(block_node)
     }
 
     // Statement = VarDecl .
     fn statement(&mut self) -> Result<Node, ParseError> {
-        self.expect_one_of(&[Token::Var]);
+        self.expect_one_of(&[Token::Var])?;
         match self.current_token {
             Token::Var => {
-
+                self.var_decl()
             }
-            _ => {}
+            _ => {
+                Err(ParseError::UnexpectedToken { pos: self.lexer.get_position(), expected: "var".to_owned(), found: self.current_token.to_string() })
+            }
         }
-
-        unimplemented!();
     }
-    
-    // VarDecl = "var" identifier ":" Type "=" primitive .
+
+    // VarDecl = "var" identifier ":" Type "=" Expression .
     fn var_decl(&mut self) -> Result<Node, ParseError> {
         self.expect(Token::Var)?;
         let mut var_decl_node = Node::new(NodeType::VarDecl);
@@ -151,22 +155,34 @@ impl Parser {
         self.expect(Token::Equals)?;
         self.next_token();
 
-        unimplemented!();
+        var_decl_node.add_child(self.expression()?);
 
         Ok(var_decl_node)
     }
 
     fn identifier(&mut self, node_type: NodeType) -> Result<Node, ParseError> {
-        self.expect(Token::Identifier(String::new()))?;
+        self.expect(Token::Identifier("".into()))?;
         let mut node = Node::new(node_type);
         node.add_token(self.current_token.clone());
         // TODO: Add ident to symbol table
         self.next_token();
+
+        Ok(node)
+    }
+
+    fn integer(&mut self) -> Result<Node, ParseError> {
+        self.expect(Token::Integer("".into()))?;
+        let mut node = Node::new(NodeType::Integer);
+        node.add_token(self.current_token.clone());
+        self.next_token();
+
         Ok(node)
     }
 
     // Expression = UnaryExpression .
     fn expression(&mut self) -> Result<Node, ParseError> {
-        unimplemented!();
+        // TODO: Obviously this is an incomplete implementation
+        self.expect(Token::Integer("".into()))?;
+        self.integer()
     }
 }
