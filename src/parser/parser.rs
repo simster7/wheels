@@ -49,15 +49,12 @@ impl Parser {
     // FunctionDef = "fn" identifier FunctionSignature FunctionBody .
     fn function_def(&mut self) -> Result<Node, ParseError> {
         self.expect(Token::Function)?;
-        let mut function_node = Node::new(NodeType::Function);
         self.next_token();
 
-        function_node.add_child(self.identifier(NodeType::Identifier)?);
+        let mut function_node = self.identifier(NodeType::Function)?;
 
         let function_signature = self.function_signature()?;
         function_node.add_child(function_signature);
-
-
 
         println!("{}", function_node);
 
