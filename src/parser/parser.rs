@@ -2,7 +2,6 @@ use crate::ast::ast::{Node, NodeType};
 use crate::lexer::lexer::Lexer;
 use crate::parser::errors::ParseError;
 use crate::token::token::Token;
-use std::borrow::Borrow;
 
 pub struct Parser {
     lexer: Lexer,
@@ -113,7 +112,7 @@ impl Parser {
         self.expect(Token::Colon)?;
         self.next_token();
 
-        let mut parameter_type = self.identifier(NodeType::Type)?;
+        let parameter_type = self.identifier(NodeType::Type)?;
         node.add_child(parameter_type);
 
         Ok(node)
@@ -187,7 +186,7 @@ impl Parser {
     }
 
     fn addition(&mut self) -> Result<Node, ParseError> {
-        let mut node = self.operand()?;
+        let node = self.operand()?;
 
         if self.current_token == Token::Plus {
             let mut binary_node = Node::new(NodeType::BinaryOperation);
