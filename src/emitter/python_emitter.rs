@@ -19,6 +19,10 @@ impl PythonEmitter {
         self.level += 1;
         self.new_line()
     }
+    fn new_line_with_back(&mut self) {
+        self.level -= 1;
+        self.new_line()
+    }
 }
 
 impl Emitter for PythonEmitter {
