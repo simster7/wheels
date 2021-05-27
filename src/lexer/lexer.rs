@@ -62,6 +62,7 @@ impl Lexer {
             ',' => Token::Comma,
             '=' => Token::Equals,
             '+' => Token::Plus,
+            '-' => Token::Minus,
             '\0' => Token::EOF,
             _ => {
                 if is_digit(self.char) {

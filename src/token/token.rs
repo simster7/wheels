@@ -17,6 +17,7 @@ pub enum Token {
     Comma,
     Equals,
     Plus,
+    Minus,
     EOF,
 }
 
@@ -38,5 +39,14 @@ pub fn lookup_literal(literal: String) -> Token {
         "fn" => Token::Function,
         "return" => Token::Return,
         _ => Token::Identifier(literal),
+    }
+}
+
+pub fn get_literal(token: &Token) -> &str {
+    match token {
+        Token::Identifier(literal) => literal,
+        Token::Integer(literal) => literal,
+        Token::Float(literal) => literal,
+        _ => panic!("token without literal"),
     }
 }

@@ -66,8 +66,6 @@ impl Parser {
         function_node.add_child(self.function_signature()?);
         function_node.add_child(self.block()?);
 
-        println!("{}", function_node);
-
         Ok(function_node)
     }
 
@@ -188,7 +186,7 @@ impl Parser {
     fn addition(&mut self) -> Result<Node, ParseError> {
         let node = self.operand()?;
 
-        if self.current_token == Token::Plus {
+        if self.current_token == Token::Plus || self.current_token == Token::Minus {
             let mut binary_node = Node::new(NodeType::BinaryOperation);
             binary_node.add_token(self.current_token.clone());
 

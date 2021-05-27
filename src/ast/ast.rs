@@ -17,11 +17,31 @@ impl Node {
             token: None,
         }
     }
+    pub fn get_type(&self) -> &NodeType {
+        &self.node_type
+    }
     pub fn add_child(&mut self, child: Node) {
         self.children.push(child)
     }
+    pub fn get_children(&self) -> &Vec<Node> {
+        &self.children
+    }
     pub fn add_token(&mut self, token: Token) {
         self.token = Some(token)
+    }
+    pub fn must_get_token_ref(&self) -> &Token {
+        self.token.as_ref().unwrap()
+    }
+    pub fn ensure_type(&self, expected: NodeType) {
+        if self.node_type != expected {
+            panic!("unexpected type")
+        }
+    }
+    pub fn must_get_only_child(&self) -> &Node {
+        if self.children.len() != 1 {
+            panic!("node does not have a single child")
+        }
+        &self.children[0]
     }
 }
 
@@ -58,7 +78,7 @@ fn format_print(node: &Node, level: usize) -> String {
     out
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum NodeType {
     Function,
     Identifier,
