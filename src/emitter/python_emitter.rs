@@ -3,51 +3,86 @@ use crate::emitter::emitter::Emitter;
 use crate::token::token::{get_literal, Token};
 
 pub struct PythonEmitter {
-    root: Node,
+    level: usize,
+    output: String,
+}
+
+impl PythonEmitter {
+    fn tabs(&self) -> String {
+        " ".to_owned().repeat(4 * self.level)
+    }
+    fn new_line(&mut self) {
+        self.output += "\n";
+        self.output += self.tabs().as_str();
+    }
+    fn new_line_with_indent(&mut self) {
+        self.level += 1;
+        self.new_line()
+    }
 }
 
 impl Emitter for PythonEmitter {
-    fn new(ast: Node) -> Self {
-        PythonEmitter { root: ast }
+    fn new() -> Self {
+        PythonEmitter {
+            level: 0,
+            output: "".to_owned(),
+        }
     }
 
-    fn header(&self) -> String {
-        "# Generated from wheels code\n".into()
+    fn add_header(&mut self) {
+        self.output += "# Generated from wheels code";
+        self.new_line();
     }
 
-    fn program(&self) -> String {
-        let mut program = self.header();
+    fn program(&mut self, node: &Node) {
+        self.add_header();
 
-        program += self.function_def(&self.root).as_str();
-
-        // for child in self.root.get_children().iter() {
-        //     if *child.get_type() == NodeType::Function {
-        //         program += self.function_def(child).as_str()
-        //     }
-        // }
-
-        program
-    }
-
-    fn function_def(&self, node: &Node) -> String {
-        node.ensure_type(NodeType::Function);
-        let mut code = String::from("def ");
-
-        code += self.function_signature(node.must_get_only_child()).as_str();
-
-        code
-    }
-
-    fn function_signature(&self, node: &Node) -> String {
-        node.ensure_type(NodeType::FunctionSignature);
-        let mut code = String::from("(");
+        node.ensure_type(NodeType::Program);
 
         for child in node.get_children().iter() {
-            child.ensure_type(NodeType::ParameterList);
-
-            code += get_literal(child.must_get_token_ref());
+            if child.is_type(NodeType::Function) {
+                self.function_def(child);
+            }
         }
+    }
 
-        code
+    fn function_def(&mut self, node: &Node) {
+        node.ensure_type(NodeType::Function);
+
+        self.output += format!("def {}", get_literal(node.must_get_token_ref())).as_str();
+
+        self.function_signature(node.get_child(0));
+        self.new_line_with_indent();
+    }
+
+    fn function_signature(&mut self, node: &Node) {
+        node.ensure_type(NodeType::FunctionSignature);
+        self.output += "(";
+
+        let parameter_list = node.get_child(0);
+        parameter_list.ensure_type(NodeType::ParameterList);
+
+        self.output += parameter_list
+            .get_children()
+            .iter()
+            .map(|child| {
+                child.ensure_type(NodeType::Parameter);
+                get_literal(child.must_get_token_ref())
+            })
+            .collect::<Vec<&str>>()
+            .join(", ")
+            .as_str();
+
+        self.output += "):";
+    }
+
+    fn block(&mut self, node: &Node) {
+        todo!()
+    }
+
+    fn get_code(&self) -> String {
+        // TODO: For now prints, should return
+        println!("{}", self.output);
+        "".to_owned()
     }
 }

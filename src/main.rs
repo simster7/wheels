@@ -12,7 +12,7 @@ use crate::parser::parser::Parser;
 fn main() {
     let lexer = Lexer::new(String::from(
         r#"
-fn simon(a: int, b: int): int {
+fn simon(a: int, b: int, c: float): int {
     var sum: int = a + b;
     var two_sum: int = sum - 2.7;
     return two_sum;
@@ -24,10 +24,10 @@ fn simon(a: int, b: int): int {
     let root = parser.program().expect("error");
     println!("{}", root);
 
-    let python = PythonEmitter::new(root);
-    let program = python.program();
+    let mut python = PythonEmitter::new();
+    python.program(&root);
 
-    println!("{}", program);
+    python.get_code();
 
     // while let Some(token) = lexer.next_token() {
     //     println!("{:?}", token)

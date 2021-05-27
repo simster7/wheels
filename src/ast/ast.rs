@@ -32,16 +32,19 @@ impl Node {
     pub fn must_get_token_ref(&self) -> &Token {
         self.token.as_ref().unwrap()
     }
+    pub fn is_type(&self, expected: NodeType) -> bool {
+        self.node_type == expected
+    }
     pub fn ensure_type(&self, expected: NodeType) {
-        if self.node_type != expected {
+        if !self.is_type(expected) {
             panic!("unexpected type")
         }
     }
-    pub fn must_get_only_child(&self) -> &Node {
-        if self.children.len() != 1 {
-            panic!("node does not have a single child")
+    pub fn get_child(&self, idx: usize) -> &Node {
+        if self.children.len() <= idx {
+            panic!("index out of bounds")
         }
-        &self.children[0]
+        &self.children[idx]
     }
 }
 
@@ -80,6 +83,7 @@ fn format_print(node: &Node, level: usize) -> String {
 
 #[derive(Debug, PartialEq)]
 pub enum NodeType {
+    Program,
     Function,
     Identifier,
     FunctionSignature,

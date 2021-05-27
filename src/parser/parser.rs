@@ -20,7 +20,10 @@ impl Parser {
     }
 
     pub fn program(&mut self) -> Result<Node, ParseError> {
-        self.function_def()
+        let mut program_node = Node::new(NodeType::Program);
+        program_node.add_child(self.function_def()?);
+
+        Ok(program_node)
     }
 
     fn expect(&mut self, token_type: Token) -> Result<(), ParseError> {
@@ -82,8 +85,7 @@ impl Parser {
             match self.current_token {
                 Token::Comma => self.next_token(),
                 _ => {
-                    let parameter_node = self.parameter()?;
-                    parameter_list_node.add_child(parameter_node);
+                    parameter_list_node.add_child(self.parameter()?);
                 }
             }
         }
