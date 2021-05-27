@@ -21,6 +21,29 @@ pub enum Token {
     EOF,
 }
 
+impl Token {
+    pub fn get_literal(&self) -> &str {
+        let out = match self {
+            Token::Identifier(literal) => literal,
+            Token::Integer(literal) => literal,
+            Token::Float(literal) => literal,
+            _ => panic!("token without literal"),
+        };
+        out.as_str()
+    }
+}
+
+impl From<String> for Token {
+    fn from(string: String) -> Self {
+        match string.as_str() {
+            "var" => Token::Var,
+            "fn" => Token::Function,
+            "return" => Token::Return,
+            _ => Token::Identifier(string),
+        }
+    }
+}
+
 impl PartialEq for Token {
     fn eq(&self, other: &Self) -> bool {
         std::mem::discriminant(self) == std::mem::discriminant(other)
@@ -30,23 +53,5 @@ impl PartialEq for Token {
 impl Display for Token {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(f, "{:?}", self)
-    }
-}
-
-pub fn lookup_literal(literal: String) -> Token {
-    match literal.as_str() {
-        "var" => Token::Var,
-        "fn" => Token::Function,
-        "return" => Token::Return,
-        _ => Token::Identifier(literal),
-    }
-}
-
-pub fn get_literal(token: &Token) -> &str {
-    match token {
-        Token::Identifier(literal) => literal,
-        Token::Integer(literal) => literal,
-        Token::Float(literal) => literal,
-        _ => panic!("token without literal"),
     }
 }

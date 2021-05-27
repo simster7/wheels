@@ -1,4 +1,4 @@
-use crate::token::token::{lookup_literal, Token};
+use crate::token::token::Token;
 
 #[derive(Debug)]
 pub struct Lexer {
@@ -76,7 +76,7 @@ impl Lexer {
                         Token::Integer(integer)
                     };
                 }
-                return lookup_literal(self.read_literal());
+                return self.read_literal().into();
             }
         };
         self.read_char();

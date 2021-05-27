@@ -1,6 +1,6 @@
 use crate::ast::ast::{Node, NodeType};
 use crate::emitter::emitter::Emitter;
-use crate::token::token::{get_literal, Token};
+use crate::token::token::Token;
 
 pub struct PythonEmitter {
     level: usize,
@@ -53,10 +53,14 @@ impl Emitter for PythonEmitter {
     fn function_def(&mut self, node: &Node) {
         node.ensure_type(NodeType::Function);
 
-        self.output += format!("def {}", get_literal(node.must_get_token_ref())).as_str();
+        self.output += format!("def {}", node.must_get_token_ref().get_literal()).as_str();
 
         self.function_signature(node.get_child(0));
         self.new_line_with_indent();
+
+        self.block(node.get_child(1));
+
+        self.new_line_with_back()
     }
 
     fn function_signature(&mut self, node: &Node) {
@@ -71,7 +75,7 @@ impl Emitter for PythonEmitter {
             .iter()
             .map(|child| {
                 child.ensure_type(NodeType::Parameter);
-                get_literal(child.must_get_token_ref())
+                child.must_get_token_ref().get_literal()
             })
             .collect::<Vec<&str>>()
             .join(", ")
@@ -81,7 +85,86 @@ impl Emitter for PythonEmitter {
     }
 
     fn block(&mut self, node: &Node) {
-        todo!()
+        node.ensure_type(NodeType::Block);
+
+        for statement in node.get_children().iter() {
+            self.statement(statement)
+        }
+    }
+
+    fn statement(&mut self, node: &Node) {
+        match node.get_type() {
+            NodeType::VarDecl => self.var_decl(node),
+            NodeType::Jump => self.jump(node),
+            _ => panic!("unknown statement type"),
+        }
+    }
+
+    fn var_decl(&mut self, node: &Node) {
+        node.ensure_type(NodeType::VarDecl);
+
+        self.output += node.get_child(0).must_get_token_ref().get_literal();
+        self.output += " = ";
+
+        self.expression(node.get_child(2));
+        self.new_line()
+    }
+
+    fn jump(&mut self, node: &Node) {
+        node.ensure_type(NodeType::Jump);
+
+        let jump_literal = match node.must_get_token_ref() {
+            Token::Return => "return",
+            _ => panic!("unknown jump literal"),
+        };
+
+        self.output += format!("{} ", jump_literal).as_str();
+
+        self.expression(node.get_child(0));
+
+        self.new_line()
+    }
+
+    fn expression(&mut self, node: &Node) {
+        node.ensure_type(NodeType::Expression);
+        let expression = node.get_child(0);
+        match expression.get_type() {
+            NodeType::BinaryOperation => self.binary_operation(expression),
+            NodeType::VarReference => {
+                self.output += expression.must_get_token_ref().get_literal();
+            }
+            _ => panic!("unknown expression type"),
+        }
+    }
+
+    fn binary_operation(&mut self, node: &Node) {
+        node.ensure_type(NodeType::BinaryOperation);
+
+        self.operand(node.get_child(0));
+
+        let binary_operator = PythonEmitter::get_token_symbol(node.must_get_token_ref());
+        self.output += format!(" {} ", binary_operator).as_str();
+
+        self.operand(node.get_child(1));
+    }
+
+    fn operand(&mut self, node: &Node) {
+        match node.get_type() {
+            NodeType::Integer => (),
+            NodeType::Float => (),
+            NodeType::VarReference => (),
+            _ => panic!("unknown operand"),
+        }
+
+        self.output += node.must_get_token_ref().get_literal()
+    }
+
+    fn get_token_symbol(token: &Token) -> &str {
+        match *token {
+            Token::Plus => "+",
+            Token::Minus => "-",
+            _ => panic!("unknown symbol"),
+        }
     }
 
     fn get_code(&self) -> String {

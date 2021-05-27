@@ -15,7 +15,7 @@ fn main() {
 fn simon(a: int, b: int, c: float): int {
     var sum: int = a + b;
     var two_sum: int = sum - 2.7;
-    return two_sum;
+    return two_sum + c;
 }
     "#,
     ));
