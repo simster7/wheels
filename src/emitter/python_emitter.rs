@@ -140,12 +140,12 @@ impl Emitter for PythonEmitter {
     fn binary_operation(&mut self, node: &Node) {
         node.ensure_type(NodeType::BinaryOperation);
 
-        self.operand(node.get_child(0));
+        self.expression(node.get_child(0));
 
         let binary_operator = PythonEmitter::get_token_symbol(node.must_get_token_ref());
         self.output += format!(" {} ", binary_operator).as_str();
 
-        self.operand(node.get_child(1));
+        self.expression(node.get_child(1));
     }
 
     fn operand(&mut self, node: &Node) {
@@ -163,6 +163,8 @@ impl Emitter for PythonEmitter {
         match *token {
             Token::Plus => "+",
             Token::Minus => "-",
+            Token::Times => "*",
+            Token::DividedBy => "/",
             _ => panic!("unknown symbol"),
         }
     }

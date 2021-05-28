@@ -47,6 +47,14 @@ impl Lexer {
         }
     }
 
+    fn peek(&self) -> char {
+        if self.read_position + 1 >= self.characters.len() {
+            '\0'
+        } else {
+            self.characters[self.read_position + 1]
+        }
+    }
+
     pub fn next_token(&mut self) -> Token {
         // TODO: Skip comments
         self.skip_whitespace();
@@ -60,9 +68,58 @@ impl Lexer {
             ':' => Token::Colon,
             ';' => Token::SemiColon,
             ',' => Token::Comma,
-            '=' => Token::Equals,
+            '=' => {
+                if self.peek() == '=' {
+                    self.next_token();
+                    Token::Equal
+                } else {
+                    Token::Assignment
+                }
+            },
             '+' => Token::Plus,
             '-' => Token::Minus,
+            '*' => Token::Times,
+            '/' => Token::DividedBy,
+            '&' => {
+                if self.peek() == '&' {
+                    self.next_token();
+                    Token::And
+                } else {
+                    Token::BitwiseAnd
+                }
+            },
+            '|' => {
+                if self.peek() == '|' {
+                    self.next_token();
+                    Token::Or
+                } else {
+                    Token::BitwiseOr
+                }
+            },
+            '>' => {
+                if self.peek() == '=' {
+                    self.next_token();
+                    Token::GreaterOrEqual
+                } else {
+                    Token::Greater
+                }
+            },
+            '<' => {
+                if self.peek() == '=' {
+                    self.next_token();
+                    Token::LessOrEqual
+                } else {
+                    Token::Less
+                }
+            },
+            '!' => {
+                if self.peek() == '=' {
+                    self.next_token();
+                    Token::NotEqual
+                } else {
+                    Token::Not
+                }
+            },
             '\0' => Token::EOF,
             _ => {
                 if is_digit(self.char) {

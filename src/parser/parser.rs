@@ -159,7 +159,7 @@ impl Parser {
 
         var_decl_node.add_child(self.identifier(NodeType::Type)?);
 
-        self.expect(Token::Equals)?;
+        self.expect(Token::Assignment)?;
         self.next_token();
 
         var_decl_node.add_child(self.expression()?);
@@ -186,20 +186,37 @@ impl Parser {
     }
 
     fn addition(&mut self) -> Result<Node, ParseError> {
-        let node = self.operand()?;
-
-        if self.current_token == Token::Plus || self.current_token == Token::Minus {
+        let mut node = self.multiplication()?;
+        while [Token::Plus, Token::Minus].contains(&self.current_token) {
             let mut binary_node = Node::new(NodeType::BinaryOperation);
-            binary_node.add_token(self.current_token.clone());
-
             binary_node.add_child(node);
+            binary_node.add_token(self.current_token.clone());
             self.next_token();
-            binary_node.add_child(self.operand()?);
-            Ok(binary_node)
-        } else {
-            Ok(node)
+
+            binary_node.add_child(self.multiplication()?);
+
+            node = binary_node;
         }
+
+        Ok(node)
     }
+
+    fn multiplication(&mut self) -> Result<Node, ParseError> {
+        let mut node = self.operand()?;
+        if [Token::Times, Token::DividedBy].contains(&self.current_token) {
+            let mut binary_node = Node::new(NodeType::BinaryOperation);
+            binary_node.add_child(node);
+            binary_node.add_token(self.current_token.clone());
+            self.next_token();
+
+            binary_node.add_child(self.operand()?);
+
+            node = binary_node;
+        }
+
+        Ok(node)
+    }
+
 
     fn operand(&mut self) -> Result<Node, ParseError> {
         self.expect_one_of(&[

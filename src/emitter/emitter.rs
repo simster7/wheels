@@ -1,4 +1,4 @@
-use crate::ast::ast::{Node, NodeType};
+use crate::ast::ast::Node;
 use crate::token::token::Token;
 
 pub trait Emitter {

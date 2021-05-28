@@ -13,9 +13,9 @@ fn main() {
     let lexer = Lexer::new(String::from(
         r#"
 fn simon(a: int, b: int, c: float): int {
-    var sum: int = a + b;
-    var two_sum: int = sum - 2.7;
-    return two_sum + c;
+    var sum: int = a + b * c ;
+    var two_sum: float = sum - 2.7;
+    return two_sum * c;
 }
     "#,
     ));
